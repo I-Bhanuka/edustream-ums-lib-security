@@ -31,6 +31,15 @@
 	</properties>
 	<dependencies>
 
+		<!-- UMS Libraries -->
+		<!-- Common lib -->
+		<dependency>
+			<groupId>com.example</groupId>
+			<artifactId>edustream_lib-common</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+
 
 		<!-- JWT library -->
 		<dependency>
