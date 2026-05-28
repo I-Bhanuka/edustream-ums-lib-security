@@ -1,6 +1,6 @@
 package com.example.edustream_lib_security.util;
 
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +29,7 @@ public class JwtUtil {
 
     // Generate the signing key from the secret
     private SecretKey getSigningKey() {
+        // HMAC - Hash-based Message Authentication Code
         return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -42,6 +43,45 @@ public class JwtUtil {
                 .expiration(Date.from(now.plusMillis(EXPIRATION_MS))) // exp claim (now + 24hrs)
                 .signWith(getSigningKey())
                 .compact();                         // signs everything above with HMAC-SHA256
+    }
+
+    // Validate the token
+    public boolean validateToken(String token) {
+        try {
+            extractClaims(token); // If this doesn't throw an exception, the token is valid
+            return true;
+        } catch (ExpiredJwtException e) {
+            System.out.println("Token expired");
+        } catch (UnsupportedJwtException e) {
+            System.out.println("Token unsupported");
+        } catch (MalformedJwtException e) {
+            System.out.println("Token malformed");
+        } catch (SignatureException e) {
+            System.out.println("Signature invalid");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Token empty or null");
+        }
+
+        return false;
+    }
+
+    // Extract the username (subject) from the token
+    public String extractUsername(String token) {
+        return extractClaims(token).getSubject();
+    }
+
+    // Extract the user role from the token
+    public String extractUserRole(String token) {
+        return extractClaims(token).get("role", String.class);
+    }
+
+    // A Private method to extract claims from the token
+    private Claims extractClaims(String token) {
+        return Jwts.parser()                // Start the parser
+                .verifyWith(getSigningKey())// Tells which secret key to use for verifying the signature
+                .build()                    // Build the parser
+                .parseSignedClaims(token)   // Decode + verify the token
+                .getPayload();              // Extract the claims (payload)
     }
 
 }
